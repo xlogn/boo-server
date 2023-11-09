@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const {profileSchema} = require("../model/profile");
 
-const profiles = [
+/*const profiles = [
   {
     "id": 1,
     "name": "A Martinez",
@@ -18,7 +18,7 @@ const profiles = [
     "psyche": "FEVL",
     "image": "https://soulverse.boo.world/images/1.png",
   }
-];
+];*/
 
 module.exports = function() {
 
@@ -47,7 +47,7 @@ module.exports = function() {
         socionics = req?.body?.socionics || "",
         sloan = req?.body?.sloan || "",
         psyche = req?.body?.psyche || "",
-        image = req?.body?.image || "https://soulverse.boo.world/images/1.png";
+        image = req?.body?.image || "https://i.ytimg.com/vi/TVh6KOhZV0M/maxresdefault.jpg";
 
 
     if(!name || !mbti){

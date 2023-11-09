@@ -17,6 +17,8 @@ connectToMongoDB().then(() => {
     // routes
     app.use('/', require('./routes/profile')());
 
+    app.use('/vote', require('./routes/vote')());
+
     // start server
     const server = app.listen(port);
     console.log('Express started. Listening on %s', port);
