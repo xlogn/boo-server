@@ -2,22 +2,48 @@
 
 const express = require('express');
 const {voteSchema} = require("../model/vote");
+const {profileSchema} = require("../model/profile");
 const router = express.Router();
 
 
 module.exports = function() {
     router.get('/:profileId', async function(req, res, next) {
 
-        const profileId = req?.params?.profileId;
+        try {
+            const profileId = req?.params?.profileId,
+                sort = req?.body.sort ?? {}, filters = req.body.filters ?? {};
 
-        const votes = await voteSchema.find({
-            profileId: profileId
-        });
+            const allowedSortKeys = ["mbti", "enneagram", "zodiac"];
 
-        if(!votes) {
-            return res.status(200).json({msg: "No vote exists with this id."});
-        } else {
-            return res.status(200).json({data: votes});
+            const filterKeys = Object.keys(filters)?.filter((key) => allowedSortKeys.includes(key) && filters[key]) || [];
+
+            let votes = await voteSchema.find({
+                profileId: profileId
+            }).lean();
+
+            if(filterKeys && votes && filterKeys?.length > 0 && votes?.length > 0){
+                const profileIds = votes?.map((vote) => vote?.voterProfileId.toString());
+                const profileFilter = {};
+                filterKeys?.forEach((key) => {profileFilter[key] = filters[key]});
+                const profiles = await profileSchema.find({
+                    ...profileFilter, _id: {$in: profileIds}
+                })
+                const relProfilesId = profiles?.map((profile) => profile?._id.toString()) || [];
+
+                votes = votes.filter((vote) => relProfilesId.includes(vote?.voterProfileId?.toString()));
+            }
+
+
+            if(!votes) {
+                return res.status(200).json({
+                    msg: "No vote exists with this id."
+                });
+            } else {
+                return res.status(200).json({data: votes});
+            }
+
+        } catch (err) {
+            return res.status(200).json({msg: err.message});
         }
     });
 
@@ -44,7 +70,6 @@ module.exports = function() {
         });
     })
 
-    // update vote.
 
     // like / unlike
     router.post("/updateLike", async function (req, res) {
